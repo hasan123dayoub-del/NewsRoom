@@ -1,37 +1,82 @@
-📝 Technical Documentation & Setup Guide - NewsRoom Platform
-Welcome to the official technical repository of NewsRoom, a high-performance, decoupled Enterprise CMS platform developed for TechNova. This project strictly follows modern software architecture patterns, focusing on scalability, security, and clean code principles.
+# 📰 NewsRoom — Headless CMS API
 
-🚀 1. Setup Instructions (Step-by-Step)
-Follow these steps to deploy and configure the environment on a local development machine (Optimized for XAMPP / PHP 8.2+ / Windows):
+A decoupled, high-performance CMS API built for **TechNova**. The project follows modern software architecture patterns with a strong focus on scalability, security and clean code.
 
-Prerequisites
-PHP: ^8.2 (with openssl, pdo, mbstring extensions enabled)
+![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?logo=laravel&logoColor=white)
+![Sanctum](https://img.shields.io/badge/Auth-Sanctum-FF2D20)
+![Redis](https://img.shields.io/badge/Cache-Redis-DC382D?logo=redis&logoColor=white)
+![MySQL](https://img.shields.io/badge/DB-MySQL-4479A1?logo=mysql&logoColor=white)
 
-Web Server: Apache 2.4+ (XAMPP Environment)
+---
 
-Database: MySQL / MariaDB
+## 📑 Table of Contents
 
-Tools: Composer, Git, Postman (for API testing)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Getting Started](#-getting-started)
+- [Database Design](#-database-design)
+- [Architectural Decisions (ADRs)](#-architectural-decisions-adrs)
+- [Authentication](#-authentication)
+- [API Endpoints](#-api-endpoints)
+- [Background Processing](#-background-processing)
+- [Postman Collection](#-postman-collection)
 
-Installation Steps
-Clone the Repository:
+---
 
-Bash
-git clone https://github.com/your-username/newsroom-api.git
-cd newsroom-api
-Install Dependencies:
-Run Composer to install all required framework packages:
+## ✨ Features
 
-Bash
+- **Versioned API** — `v1` for web clients and `v2` for mobile clients with richer payloads.
+- **Role-based access** (admin, writer, reader) enforced through Policies.
+- **Editorial workflow** — writers publish, admins review.
+- **Repository & Service layers** keeping controllers thin and testable.
+- **Redis atomic locks** to protect the dashboard from cache stampedes.
+- **Queued events, jobs and notifications** for heavy or slow work.
+- **Scheduled commands** for archiving old articles and generating weekly reports.
+- **Rate limiting** — 60 requests/minute per user (or IP for guests).
+- **Request telemetry** logged after the response is sent.
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| Language | PHP 8.2+ |
+| Framework | Laravel 11 |
+| Authentication | Laravel Sanctum (Bearer tokens) |
+| Database | MySQL / MariaDB (SQLite works for local testing) |
+| Cache & Locks | Redis (`predis/predis`) |
+| Queue | Database driver |
+| API Testing | Postman |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- PHP **8.2+** with `openssl`, `pdo` and `mbstring` enabled
+- Composer
+- MySQL / MariaDB
+- Redis (recommended for cache & atomic locks)
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/hasan123dayoub-del/NewsRooom.git
+cd NewsRooom
+
+# 2. Install dependencies
 composer install
-Environment Configuration:
-Copy the example environment file and configure your local settings:
 
-Bash
+# 3. Create the environment file
 cp .env.example .env
-Open the .env file and update your database credentials:
+php artisan key:generate
+```
 
-Code snippet
+Update the database, cache and queue settings in `.env`:
+
+```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -39,116 +84,171 @@ DB_DATABASE=newsroom_db
 DB_USERNAME=root
 DB_PASSWORD=
 
-CACHE_STORE=redis # Or database/file depending on your local config
+CACHE_STORE=redis        # or database / file
 QUEUE_CONNECTION=database
-Generate Application Key:
+```
 
-Bash
-php artisan key:generate
-Database Migrations and Seeding:
-Run the migrations to build schemas and seed the initial tags/roles:
-
-Bash
+```bash
+# 4. Build the schema and seed users, categories, tags and articles
 php artisan migrate --seed
-Serve the Application:
-Since you are using XAMPP, you can map the domain in your Apache vhosts file or run the built-in development server:
 
-Bash
+# 5. Run the application
 php artisan serve
-The API will be accessible at: http://127.0.0.1:8000
 
-🗄️ 2. Entities & Database Relationships
-The system database schema is strictly normalized and indexed to support intense concurrent reads/writes without performance bottlenecks.
+# 6. (In separate terminals) process queued jobs and scheduled tasks
+php artisan queue:work
+php artisan schedule:work
+```
 
-   [ User ] 1 ─────── 1 [ Profile ]
-      │
-      └─ 1 ─────── 1..* [ Article ] 1..* ─────── 1..* [ Tag ]  (Polymorphic / Pivot)
-                           │
-                           └─ 1 ─────── 1..* [ Comment ]
-                           │
-                           └─ 1 ─────── 1..* [ Attachment ]
-Core Entities Description:
-User & Profile (1:1 Relationship):
-Each registered employee (admin, writer, reader) has exactly one static profile containing descriptive metadata.
+The API is now available at **http://127.0.0.1:8000/api**.
 
-Implementation: $user->profile() and $profile->user().
+---
 
-User & Article (1:N Relationship):
-A user can write multiple articles, but each article belongs to only one author.
+## 🗄 Database Design
 
-Implementation: $user->articles() and $article->user().
+The schema is normalized and indexed to handle heavy concurrent reads and writes.
 
-Article & Comment (1:N Relationship):
-An article can have multiple comments left by readers or internal reviewers.
+```text
+[ User ] 1 ──── 1 [ Profile ]
+   │
+   └── 1 ──── * [ Article ] * ──── * [ Tag ]        (polymorphic pivot: taggables)
+                   │
+                   ├── 1 ──── * [ Comment ]
+                   ├── 1 ──── * [ Attachment ]
+                   └── * ──── 1 [ Category ]
+```
 
-Implementation: $article->comments() and $comment->article().
+| Relationship | Type | Implementation |
+| :--- | :--- | :--- |
+| User ↔ Profile | 1 : 1 | `$user->profile()` / `$profile->user()` |
+| User ↔ Article | 1 : N | `$user->articles()` / `$article->user()` |
+| Article ↔ Comment | 1 : N | `$article->comments()` / `$comment->article()` |
+| Article ↔ Tag | N : M (polymorphic) | `$article->tags()` / `$tag->articles()` |
+| Article ↔ Attachment | 1 : N | `$article->attachments()` |
 
-Article & Tag (N:M Many-to-Many Relationship):
-Articles are dynamically categorized using multi-tags through a pivot relationship to maximize indexing efficiency.
+---
 
-Implementation: $article->tags() and $tag->articles().
+## 🏛 Architectural Decisions (ADRs)
 
-Article & Attachment (1:N Relationship):
-Supports rich media rendering by attaching uploaded file entities to articles.
+### A. Repository Pattern & Contract-Driven Design
+**Decision:** All query logic lives behind `ArticleRepositoryInterface`, bound to its Eloquent implementation in `AppServiceProvider`.
+**Why:** Loose coupling — controllers never touch Eloquent directly. Switching the data source (e.g. to MongoDB or an external service) means changing a single binding.
 
-🏛️ 3. Architectural Decisions & Rationales (ADRs)
-To meet the high standards demanded by the CTO, several advanced architectural practices were implemented:
+### B. Service Layer (Slim Controllers)
+**Decision:** Business logic such as syncing tags and processing input lives in `ArticleService` and `DashboardService`.
+**Why:** Single Responsibility — controllers only receive the request and return the response.
 
-A. Repository Pattern & Contract-Driven Design
-Decision: Encapsulated all database query mechanics inside an abstract layer (ArticleRepositoryInterface), injected dynamically into the controllers via Laravel's Service Container.
+### C. Contextual Binding for Notifications
+**Decision:** `NotificationSenderInterface` is resolved per controller:
 
-Why? It ensures Loose Coupling. The controllers are 100% blind to Eloquent and MySQL. If the business scales and switches to MongoDB or an external microservice, we only change a single line in AppServiceProvider without refactoring controllers.
+```php
+$this->app->when(AdminArticleController::class)
+    ->needs(NotificationSenderInterface::class)
+    ->give(DatabaseNotificationSender::class);
 
-B. Decoupled Service Layer (Slim Controllers)
-Decision: Extracted heavy core business logic (e.g., synchronizing tag relationships, processing input mutations) out of the HTTP request lifecycle into specialized domain classes (ArticleService, DashboardService).
+$this->app->when(WriterArticleController::class)
+    ->needs(NotificationSenderInterface::class)
+    ->give(EmailNotificationSender::class);
+```
 
-Why? Adheres strictly to the Single Responsibility Principle (SRP). Controllers remain thin, clean, and focus only on receiving HTTP requests and returning clean API payloads.
+**Why:** No `if/else` role checks — the container picks the right channel (database or email) automatically.
 
-C. Contextual Binding for Notifications
-Decision: Implemented NotificationSenderInterface dynamically resolved via context rules for AdminArticleController and WriterArticleController.
+### D. API Versioning (V1 / V2)
+**Decision:** Web endpoints live under `/api/v1`, mobile endpoints under `/api/v2`, each with its own controllers and `ArticleResource`.
+**Why:** Mobile clients get aggregated data (tags, `comments_count`) in one round trip without breaking existing V1 integrations.
 
-Why? Avoids massive if/else statements checking user roles. The framework knows automatically when to route notifications through database logging or external email channels at runtime.
+### E. Cache Stampede Protection (Atomic Locks)
+**Decision:** `DashboardService` rebuilds its statistics inside a Redis lock:
 
-D. Multi-Version API Isolation (V1/V2 Architecture)
-Decision: Separated the Web Client endpoints (/api/v1/) from the Mobile Client endpoints (/api/v2/) using inheritance-based controllers.
+```php
+$lock = Cache::lock('calculating_dashboard_stats', 10);
+$lock->block(5);
+```
 
-Why? Mobile devices require rich aggregated data objects (tags, comments_count) to avoid round-trip network lag. By utilizing polymorphic JsonResource structures, we deliver rich data payloads to V2 clients without breaking existing V1 legacy integrations.
+**Why:** When the cache expires under heavy traffic, only one worker queries the database while the others wait for the fresh result.
 
-E. Advanced Cache Stampede Protection (Atomic Locking)
-Decision: Integrated Redis Atomic Locks ($lock->block()) inside the dashboard infrastructure layer.
+### F. After-Response Telemetry
+**Decision:** `LogRequestData` middleware records request metrics in its `terminate()` method.
+**Why:** Logging happens after the response has been sent, so it adds no latency for the client.
 
-Why? Prevents system crashes during peak traffic spikes. When high-velocity cache expiration occurs, only one worker thread is permitted to query the underlying database to rebuild the cache matrix, keeping database overhead completely flat.
+---
 
-F. After-Middleware Telemetry Logging
-Decision: Implemented custom logging capturing execution metrics utilizing the terminate() lifecycle function of Laravel's middleware.
+## 🔐 Authentication
 
-Why? Offloads logging processing overhead completely until after the HTTP response has been safely transmitted to the client, assuring optimal API latency.
+NewsRoom uses **Laravel Sanctum** for stateless, token-based authentication suitable for both web and mobile clients.
 
-🔐 Security & Authentication
-NewsRoom employs **Laravel Sanctum** for lightweight, robust API authentication. The architecture ensures stateless session-less communication suitable for both web and mobile clients.
+- **Register** — creates a user with a Bcrypt-hashed password.
+- **Login** — returns a `Bearer` token.
+- **Responses** — shaped by `UserResource`, so only public fields are exposed.
 
-🔑 Authentication Flow:
-- **Registration:** Secure user creation with password hashing (Bcrypt).
-- **Login:** Token-based authentication returning a `Bearer Token`.
-- **User Transformation:** We utilize `UserResource` to ensure that API responses are decoupled from the database schema, providing only the necessary public-facing metadata.
+Send the token with every protected request:
 
-🛠️ Authentication Endpoints:
-| Method | Endpoint        | Description                          | Auth Required |
-| :----- | :-------------- | :----------------------------------- | :------------ |
-| `POST` | `/api/register` | Create a new user account            | No            |
-| `POST` | `/api/login`    | Authenticate & retrieve access token | No            |
-| `POST` | `/api/logout`   | Revoke current access token          | Yes           |
+```http
+Authorization: Bearer <your-token>
+```
 
-🚀 Automation in Postman:
-To streamline testing, we have implemented an **Auto-Token Injection** mechanism in the Postman collection:
-1. Navigate to the `login` request inside the `Authentication` folder.
-2. In the **Tests** tab, a script automatically captures the `access_token` and saves it to your `sanctum_token` environment variable.
-3. All subsequent requests in the collection are configured to use this token automatically as a `Bearer Token`.
+---
 
+## 📡 API Endpoints
 
-📂 Api Collectios :
+### Authentication
 
-📌 [Click here to download the file and try it](<TechNova NewsRoom API - 2026.postman_collection.json>)
+| Method | Endpoint | Description | Auth |
+| :--- | :--- | :--- | :---: |
+| `POST` | `/api/register` | Create a new account | — |
+| `POST` | `/api/login` | Log in and receive a token | — |
+| `POST` | `/api/logout` | Revoke the current token | ✅ |
+| `GET` | `/api/user` | Get the authenticated user | ✅ |
 
-Developed with pure architectural discipline for TechNova Enterprise System - 2026.
- 
+### V1 — Web Client
+
+| Method | Endpoint | Description | Auth |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/v1/articles` | List published articles | — |
+| `GET` | `/api/v1/articles/{id}` | Show an article | — |
+| `GET` | `/api/v1/dashboard` | Cached dashboard statistics | — |
+| `POST` | `/api/v1/articles` | Create an article (writer) | ✅ |
+| `PUT` | `/api/v1/articles/{id}` | Update own article (writer) | ✅ |
+| `DELETE` | `/api/v1/articles/{id}` | Delete own article (writer) | ✅ |
+| `POST` | `/api/v1/articles/{id}/publish` | Publish an article (writer) | ✅ |
+| `POST` | `/api/v1/articles/{id}/review` | Review an article (admin) | ✅ |
+
+### V2 — Mobile Client
+
+| Method | Endpoint | Description | Auth |
+| :--- | :--- | :--- | :---: |
+| `GET` | `/api/v2/articles` | List articles with tags & comment counts | — |
+| `GET` | `/api/v2/articles/{id}` | Show an article with full details | — |
+| `POST` | `/api/v2/articles` | Create an article | ✅ |
+| `PUT` | `/api/v2/articles/{id}` | Update an article | ✅ |
+| `DELETE` | `/api/v2/articles/{id}` | Delete an article | ✅ |
+
+> All `v1` and `v2` routes are rate-limited to **60 requests per minute**.
+
+---
+
+## ⚙️ Background Processing
+
+| Component | Purpose |
+| :--- | :--- |
+| `ArticlePublished` → `NotifyEmployeesOfNewArticle` | Queued listener that notifies staff about new articles |
+| `UserRegistered` → `SendWelcomeMessage` | Queued welcome message for new users |
+| `SendNotificationToChunkJob` | Sends notifications in chunks to avoid memory spikes |
+| `articles:archive 30` | Archives articles older than 30 days — runs **monthly** |
+| `articles:report` | Generates the articles report — runs **every Friday at 08:00** |
+
+---
+
+## 🧪 Postman Collection
+
+📥 **[Download the Postman collection](TechNova%20NewsRoom%20API%20-%202026.postman_collection.json)**
+
+The collection injects the token for you:
+
+1. Run the **login** request in the `Authentication` folder.
+2. Its **Tests** script saves the `access_token` into the `sanctum_token` environment variable.
+3. Every other request then uses it automatically as a `Bearer` token.
+
+---
+
+<p align="center">Built with ❤️ using Laravel — TechNova NewsRoom 2026</p>
