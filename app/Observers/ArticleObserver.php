@@ -5,6 +5,9 @@ namespace App\Observers;
 use App\Models\Article;
 use App\Services\DashboardService;
 use App\Events\ArticlePublished;
+use App\Notifications\ArticlePublishedNotification;
+use App\Jobs\ProcessArticlePublishing;
+
 
 class ArticleObserver
 {
@@ -30,17 +33,12 @@ class ArticleObserver
      */
     public function updated(Article $article): void
     {
-        if ($article->isDirty('status') && $article->status === 'published') {
+        if ($article->isDirty('status') || ($article->status === 'published' && ($article->isDirty('title') || $article->isDirty('content')))) {
             $this->dashboardService->clearDashboardCache();
-            ArticlePublished::dispatch($article);
-        }
-        if ($article->isDirty('status')) {
-            $this->dashboardService->clearDashboardCache();
-            return;
         }
 
-        if ($article->status === 'published' && ($article->isDirty('title') || $article->isDirty('content'))) {
-            $this->dashboardService->clearDashboardCache();
+        if ($article->wasChanged('status') && $article->status === 'published') {
+            ArticlePublished::dispatch($article);
         }
     }
 

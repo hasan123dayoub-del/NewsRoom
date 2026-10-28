@@ -68,12 +68,12 @@ class ArticleController extends Controller
         ]);
     }
 
-    public function destroy(Article $article): JsonResponse
+    public function destroy(Article $article)
     {
         $this->authorize('delete', $article);
 
-        $this->articleRepository->update($article->id, ['status' => 'archived']);
+        $article->delete();
 
-        return response()->json(['message' => 'Article deleted successfully']);
+        return response()->json(['message' => 'Article deleted successfully'], 200);
     }
 }

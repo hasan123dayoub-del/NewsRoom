@@ -8,6 +8,9 @@ use App\Http\Controllers\Api\V1\WriterArticleController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V2\ArticleController as V2ArticleController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\V1\CommentController;
+use App\Http\Controllers\Api\V1\AttachmentController;
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -24,6 +27,10 @@ Route::middleware('throttle:api_limiter')->group(function () {
 
 
     Route::prefix('v1')->group(function () {
+
+        Route::post('/articles/{article}/comments', [CommentController::class, 'store']);
+
+        Route::post('articles/{article}/attachments', [AttachmentController::class, 'store']);
 
         Route::get('/articles', [V1ArticleController::class, 'index']);
         Route::get('/articles/{article}', [V1ArticleController::class, 'show']);

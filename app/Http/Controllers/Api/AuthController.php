@@ -23,7 +23,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'reader', // افتراضي
+            'role' => 'reader',
             'is_active' => true,
         ]);
 

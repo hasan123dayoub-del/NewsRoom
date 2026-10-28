@@ -11,6 +11,9 @@ use App\Services\DatabaseNotificationSender;
 use App\Services\EmailNotificationSender;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use App\Events\ArticlePublished;
+use App\Listeners\SendArticlePublishingJob;
+
 
 
 class AppServiceProvider extends ServiceProvider
@@ -36,8 +39,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if ($this->app->runningInConsole()) {
-            Event::discoverEvents();
-        }
+        Event::listen(
+            ArticlePublished::class,
+            SendArticlePublishingJob::class,
+        );
     }
 }

@@ -4,7 +4,7 @@ namespace App\Listeners;
 
 use App\Events\ArticlePublished;
 use App\Models\User;
-use App\Jobs\SendNotificationToChunkJob; // ◄ استدعاء الـ Job الذكي
+use App\Jobs\SendNotificationToChunkJob;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;

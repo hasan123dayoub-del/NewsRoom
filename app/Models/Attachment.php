@@ -23,8 +23,4 @@ class Attachment extends Model
     {
         return $this->morphTo();
     }
-    public function attachments()
-    {
-        return $this->morphMany(Attachment::class, 'attachable');
-    }
 }

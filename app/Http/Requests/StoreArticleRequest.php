@@ -26,6 +26,7 @@ class StoreArticleRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'category_id' => 'required|exists:categories,id',
             'title'   => ['required', 'string', 'min:10', 'unique:articles,title'],
             'content' => ['required', 'string', 'min:100'],
             'tags'    => ['nullable', 'array'],
