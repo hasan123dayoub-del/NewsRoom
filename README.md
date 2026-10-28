@@ -2,6 +2,7 @@
 
 A decoupled, high-performance CMS API built for **TechNova**. The project follows modern software architecture patterns with a strong focus on scalability, security and clean code.
 
+[![tests](https://github.com/hasan123dayoub-del/NewsRoom/actions/workflows/tests.yml/badge.svg)](https://github.com/hasan123dayoub-del/NewsRoom/actions/workflows/tests.yml)
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?logo=laravel&logoColor=white)
 ![Sanctum](https://img.shields.io/badge/Auth-Sanctum-FF2D20)
