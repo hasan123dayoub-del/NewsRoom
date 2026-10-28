@@ -11,7 +11,6 @@ use Throwable;
 class SendWelcomeMessage implements ShouldQueue
 {
     use InteractsWithQueue;
-    public $connection = 'redis';
     public $queue = 'default';
 
     public function handle(UserRegistered $event): void

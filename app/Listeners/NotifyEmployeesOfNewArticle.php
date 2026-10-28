@@ -13,7 +13,6 @@ class NotifyEmployeesOfNewArticle implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public $connection = 'redis';
     public $queue = 'notifications';
     public function handle(ArticlePublished $event): void
     {
@@ -31,7 +30,7 @@ class NotifyEmployeesOfNewArticle implements ShouldQueue
             SendNotificationToChunkJob::dispatch($userIds, $event->article);
         });
 
-        Log::info("Asynchronous Queue: All notification chunks have been successfully pushed to Redis!");
+        Log::info("Asynchronous Queue: All notification chunks have been pushed to the queue.");
     }
 
     public function failed(ArticlePublished $event, \Throwable $exception): void
