@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NewsRoom API</title>
-    <meta name="description" content="NewsRoom: a headless CMS REST API built with Laravel 11, with versioned v1/v2 endpoints. Try it live with demo accounts.">
+    <meta name="description" content="NewsRoom: a headless CMS REST API built with Laravel 12, with versioned v1/v2 endpoints. Try it live with demo accounts.">
     <style>
         :root { --bg: #fafafa; --surface: #fff; --border: #e4e4e7; --text: #52525b; --text-h: #09090b; --accent: #0e7490; --accent-bg: rgba(14, 116, 144, .08); }
         @media (prefers-color-scheme: dark) {
@@ -40,7 +40,7 @@
 <body>
 <main class="wrap">
     <h1>NewsRoom API</h1>
-    <p class="lead">A headless CMS REST API for a company newsroom, built with Laravel 11: writers publish articles, readers comment, and admins review content. Web clients use <code>v1</code>, mobile clients use <code>v2</code>.</p>
+    <p class="lead">A headless CMS REST API for a company newsroom, built with Laravel 12: writers publish articles, readers comment, and admins review content. Web clients use <code>v1</code>, mobile clients use <code>v2</code>.</p>
     <div class="actions">
         <a class="btn primary" href="{{ url('/docs/api') }}">Try the API in your browser →</a>
         <a class="btn" href="https://github.com/hasan123dayoub-del/NewsRoom">Source on GitHub</a>

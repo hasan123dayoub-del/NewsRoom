@@ -4,7 +4,7 @@ A decoupled, high-performance CMS API built for **TechNova**. The project follow
 
 [![tests](https://github.com/hasan123dayoub-del/NewsRoom/actions/workflows/tests.yml/badge.svg)](https://github.com/hasan123dayoub-del/NewsRoom/actions/workflows/tests.yml)
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)
-![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?logo=laravel&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
 ![Sanctum](https://img.shields.io/badge/Auth-Sanctum-FF2D20)
 ![Redis](https://img.shields.io/badge/Cache-Redis-DC382D?logo=redis&logoColor=white)
 ![MySQL](https://img.shields.io/badge/DB-MySQL-4479A1?logo=mysql&logoColor=white)
@@ -51,7 +51,7 @@ A decoupled, high-performance CMS API built for **TechNova**. The project follow
 | Layer | Technology |
 | :--- | :--- |
 | Language | PHP 8.2+ |
-| Framework | Laravel 11 |
+| Framework | Laravel 12 |
 | Authentication | Laravel Sanctum (Bearer tokens) |
 | Database | MySQL / MariaDB (SQLite works for local testing) |
 | Cache & Locks | Redis (`predis/predis`) |
