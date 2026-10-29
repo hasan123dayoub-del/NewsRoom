@@ -9,6 +9,15 @@ A decoupled, high-performance CMS API built for **TechNova**. The project follow
 ![Redis](https://img.shields.io/badge/Cache-Redis-DC382D?logo=redis&logoColor=white)
 ![MySQL](https://img.shields.io/badge/DB-MySQL-4479A1?logo=mysql&logoColor=white)
 
+## 🌐 Live demo
+
+**API base URL:** (added after the first Render deploy)
+
+- **Interactive API docs (try every endpoint in the browser):** `/docs/api`, generated from the code with [Scramble](https://scramble.dedoc.co). The login request is pre-filled with the writer account: send it, paste the `access_token` as the Bearer token, and call any protected endpoint.
+- Public endpoints: `GET /api/v1/articles`, `GET /api/v2/articles` (adds reading time, tags and comment counts) and `GET /api/v1/dashboard`.
+- Demo accounts (password `password` for all): writer `writer@technova.com` (create, update, publish and delete own articles), reader `reader@technova.com` (comment), admin `admin@technova.com` (review and manage everything). The seeders add 8 articles, comments and tags.
+- Hosted on Render's free tier with SQLite and the array cache store (atomic locks and cache tags work without Redis): the first request after a period of inactivity can take about a minute, and the demo data resets on every restart.
+
 ---
 
 ## 📑 Table of Contents
@@ -64,8 +73,8 @@ A decoupled, high-performance CMS API built for **TechNova**. The project follow
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/hasan123dayoub-del/NewsRooom.git
-cd NewsRooom
+git clone https://github.com/hasan123dayoub-del/NewsRoom.git
+cd NewsRoom
 
 # 2. Install dependencies
 composer install
@@ -213,6 +222,8 @@ Authorization: Bearer <your-token>
 | `DELETE` | `/api/v1/articles/{id}` | Delete own article (writer) | ✅ |
 | `POST` | `/api/v1/articles/{id}/publish` | Publish an article (writer) | ✅ |
 | `POST` | `/api/v1/articles/{id}/review` | Review an article (admin) | ✅ |
+| `POST` | `/api/v1/articles/{id}/comments` | Comment on an article | ✅ |
+| `POST` | `/api/v1/articles/{id}/attachments` | Upload an attachment (max 2 MB) | ✅ |
 
 ### V2 — Mobile Client
 

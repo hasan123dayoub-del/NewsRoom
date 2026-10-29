@@ -10,6 +10,7 @@ use App\Services\NotificationSenderInterface;
 use App\Services\DatabaseNotificationSender;
 use App\Services\EmailNotificationSender;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use App\Events\ArticlePublished;
 use App\Listeners\SendArticlePublishingJob;
@@ -43,5 +44,8 @@ class AppServiceProvider extends ServiceProvider
             ArticlePublished::class,
             SendArticlePublishingJob::class,
         );
+
+        // The interactive API docs (/docs/api) are public so anyone can try the demo.
+        Gate::define('viewApiDocs', fn ($user = null) => true);
     }
 }

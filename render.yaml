@@ -1,0 +1,9 @@
+# Render Blueprint: free Docker web service for the NewsRoom demo API.
+# APP_URL comes from RENDER_EXTERNAL_URL at boot (see docker/start.sh).
+services:
+  - type: web
+    name: newsroom-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /up
+    autoDeploy: true

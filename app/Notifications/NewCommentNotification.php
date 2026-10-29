@@ -4,7 +4,9 @@ namespace App\Notifications;
 
 use App\Models\Comment;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Str;
 
 class NewCommentNotification extends Notification
 {
@@ -26,12 +28,21 @@ class NewCommentNotification extends Notification
         return ['mail'];
     }
 
+    public function toMail(object $notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('New comment on your article')
+            ->line($this->comment->user->name.' commented on your article:')
+            ->line('"'.Str::limit($this->comment->content, 200).'"');
+    }
+
     public function toArray(object $notifiable): array
     {
+        // Comments are polymorphic: the article id is stored in commentable_id and the text in content.
         return [
-            'article_id' => $this->comment->article_id,
-            'body'       => 'New Comment: ' . substr($this->comment->body, 0, 50),
-            'user_name'  => $this->comment->user->name,
+            'article_id' => $this->comment->commentable_id,
+            'body' => 'New Comment: '.Str::limit($this->comment->content, 50),
+            'user_name' => $this->comment->user->name,
         ];
     }
 }

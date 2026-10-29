@@ -16,5 +16,7 @@ class AdminArticleController extends Controller
     public function review()
     {
         $this->notificationSender->send('the article has been reviewed by admin');
+
+        return response()->json(['message' => 'Admin notified in the database (DatabaseNotificationSender)']);
     }
 }

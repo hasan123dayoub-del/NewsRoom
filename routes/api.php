@@ -28,15 +28,15 @@ Route::middleware('throttle:api_limiter')->group(function () {
 
     Route::prefix('v1')->group(function () {
 
-        Route::post('/articles/{article}/comments', [CommentController::class, 'store']);
-
-        Route::post('articles/{article}/attachments', [AttachmentController::class, 'store']);
-
         Route::get('/articles', [V1ArticleController::class, 'index']);
         Route::get('/articles/{article}', [V1ArticleController::class, 'show']);
         Route::get('/dashboard', [DashboardController::class, 'index']);
 
         Route::middleware('auth:sanctum')->group(function () {
+
+            // Comments and uploads are tied to the signed-in user (user_id), so they need a token.
+            Route::post('/articles/{article}/comments', [CommentController::class, 'store']);
+            Route::post('articles/{article}/attachments', [AttachmentController::class, 'store']);
 
             Route::post('/articles', [V1ArticleController::class, 'store']);
             Route::put('/articles/{article}', [V1ArticleController::class, 'update']);

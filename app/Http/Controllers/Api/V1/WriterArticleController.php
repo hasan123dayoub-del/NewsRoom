@@ -17,5 +17,7 @@ class WriterArticleController extends Controller
     public function publish()
     {
         $this->notificationSender->send('the article has been published by the writer');
+
+        return response()->json(['message' => 'Writer notified by email (EmailNotificationSender)']);
     }
 }

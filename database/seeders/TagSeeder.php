@@ -10,7 +10,7 @@ class TagSeeder extends Seeder
 {
     public function run(): void
     {
-        $tags = ['Laravel', 'Redis', 'Security', 'Updates', 'Announcements'];
+        $tags = ['Laravel', 'Redis', 'Security', 'Performance', 'Announcements', 'Hiring', 'Events'];
 
         foreach ($tags as $tagName) {
             Tag::create([
