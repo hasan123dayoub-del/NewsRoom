@@ -20,6 +20,10 @@ return [
 
     'default' => env('LOG_CHANNEL', 'stack'),
 
+    // Where the monthly writers report is written (GenerateReportJob). A file by default;
+    // read-only hosts such as Vercel send it to stderr instead.
+    'report_channel' => env('LOG_REPORT_CHANNEL', 'single'),
+
     /*
     |--------------------------------------------------------------------------
     | Deprecations Log Channel

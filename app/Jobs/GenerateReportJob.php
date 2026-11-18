@@ -38,7 +38,7 @@ class GenerateReportJob implements ShouldQueue
         }
 
         if (!$this->isDryRun) {
-            Log::channel('single')->info($this->logOutput);
+            Log::channel(config('logging.report_channel'))->info($this->logOutput);
         }
     }
 }
